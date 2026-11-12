@@ -132,6 +132,10 @@ button,.btn,.select-btn{min-height:44px;touch-action:manipulation}
 
 /* Acesso flutuante ao carrinho após adicionar serviços */
 .floating-cart{position:fixed;z-index:25;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;width:max-content;max-width:calc(100% - 24px);padding:13px 20px;border:1px solid #d8bd7a;border-radius:999px;background:#171613;color:#f2d99e;box-shadow:0 8px 30px #0005;font:800 .94rem/1.2 Inter,Arial,sans-serif;cursor:pointer;white-space:nowrap}.floating-cart span{font-size:.8rem;color:#fff0c7;font-weight:600}.floating-cart[hidden]{display:none!important}.floating-cart:active{transform:translateX(-50%) scale(.98)}@media(max-width:600px){.floating-cart{bottom:calc(12px + env(safe-area-inset-bottom));width:calc(100% - 28px);padding:14px 12px;font-size:.9rem;gap:8px}.floating-cart span{font-size:.76rem}}
+.account-view[hidden]{display:none}
+#loginView,#signupView{margin-top:8px}
+#loginView .btn,#signupView .btn{width:100%}
+#loginView .select-btn,#signupView .select-btn{background:#f7f1e5;border-color:#d8c8a5}
 </style>
 </head>
 <body>
@@ -146,13 +150,27 @@ button,.btn,.select-btn{min-height:44px;touch-action:manipulation}
     <p class="small">Entre para acessar sua conta ou crie seu cadastro para acompanhar seus atendimentos e consultar seu histórico.</p>
     <div id="accountSession" class="account-session" hidden></div>
     <section id="customerHistory" class="admin-section" hidden><h3>Meus atendimentos concluídos</h3><div id="customerHistoryList">Carregando...</div></section>
-    <div class="account-actions account-mode-switch" style="margin:16px 0"><button class="btn dark" id="modeLogin" type="button" aria-pressed="true">Entrar</button><button class="btn" id="modeSignup" type="button" aria-pressed="false">Cadastro</button></div>
-    <form id="authForm" class="fields">
-      <label>Nome<input id="authName" autocomplete="name" placeholder="Seu nome"></label>
-      <label>E-mail<input id="authEmail" type="email" required autocomplete="email" placeholder="voce@email.com"></label>
-      <label>Senha<input id="authPassword" type="password" required minlength="8" autocomplete="current-password" placeholder="Mínimo de 8 caracteres"></label>
-      <div class="account-actions"><button class="btn" id="signupBtn" type="button" hidden>Finalizar cadastro</button><button class="btn dark" id="loginBtn" type="submit">Entrar</button></div>
-    </form>
+    <div id="loginView">
+      <h3 style="margin:18px 0 10px">Entrar na sua conta</h3>
+      <form id="authForm" class="fields">
+        <label>E-mail<input id="authEmail" type="email" required autocomplete="username" placeholder="voce@email.com"></label>
+        <label>Senha<input id="authPassword" type="password" required autocomplete="current-password" placeholder="Sua senha"></label>
+        <button class="btn dark" id="loginBtn" type="submit">Entrar</button>
+      </form>
+      <p class="small" style="text-align:center;margin-top:16px">Ainda não tem conta?</p>
+      <button class="select-btn" id="showSignup" type="button">Criar cadastro</button>
+    </div>
+    <div id="signupView" hidden>
+      <h3 style="margin:18px 0 10px">Criar seu cadastro</h3>
+      <form id="signupForm" class="fields">
+        <label>Nome completo<input id="authName" autocomplete="name" placeholder="Seu nome" required></label>
+        <label>E-mail<input id="signupEmail" type="email" required autocomplete="email" placeholder="voce@email.com"></label>
+        <label>Senha<input id="signupPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="Crie uma senha com 8 caracteres ou mais"></label>
+        <button class="btn" id="signupBtn" type="submit">Finalizar cadastro</button>
+      </form>
+      <p class="small" style="text-align:center;margin-top:16px">Já possui uma conta?</p>
+      <button class="select-btn" id="showLogin" type="button">Voltar para entrar</button>
+    </div>
     <p id="authMessage" class="small" role="status" aria-live="polite"></p>
     <button id="logoutBtn" class="select-btn" type="button" hidden>Sair da conta</button>
   </div>
@@ -282,11 +300,11 @@ async function refreshDiscountStatus(){
  discountEligible=!error && !!data?.eligible;
  render();
 }
-let accountMode='login';
-function setAccountMode(mode){accountMode=mode;const signup=mode==='signup';document.getElementById('authName').hidden=!signup;document.getElementById('signupBtn').hidden=!signup;document.getElementById('loginBtn').hidden=signup;document.getElementById('modeLogin').classList.toggle('dark',!signup);document.getElementById('modeSignup').classList.toggle('dark',signup);document.getElementById('modeLogin').setAttribute('aria-pressed',String(!signup));document.getElementById('modeSignup').setAttribute('aria-pressed',String(signup));document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';showAuthMessage(signup?'Preencha seu nome, e-mail e senha para criar seu cadastro.':'Informe seu e-mail e senha para entrar.');}
-document.getElementById('modeLogin').addEventListener('click',()=>setAccountMode('login'));
-document.getElementById('modeSignup').addEventListener('click',()=>setAccountMode('signup'));
-setAccountMode('login');
+function showLoginView(){document.getElementById('loginView').hidden=false;document.getElementById('signupView').hidden=true;showAuthMessage('Informe seu e-mail e sua senha para entrar.');}
+function showSignupView(){document.getElementById('loginView').hidden=true;document.getElementById('signupView').hidden=false;showAuthMessage('Preencha seus dados para criar sua conta.');}
+document.getElementById('showSignup').addEventListener('click',showSignupView);
+document.getElementById('showLogin').addEventListener('click',showLoginView);
+showLoginView();
 function showAuthMessage(message,isError=false){const el=document.getElementById('authMessage');el.textContent=message;el.style.color=isError?'#a32929':'#19734a';}
 function updateAccountUI(){
  const sessionBox=document.getElementById('accountSession');
@@ -294,18 +312,14 @@ function updateAccountUI(){
  if(currentSession){
    const email=currentSession.user.email||'Cliente';
    sessionBox.hidden=false;sessionBox.textContent='Conectado como '+email;document.getElementById('accountToggle').textContent='♙ Minha conta';
-   document.getElementById('signupBtn').hidden=true;document.getElementById('modeLogin').hidden=true;document.getElementById('modeSignup').hidden=true;
-   document.getElementById('authName').hidden=true;
+   document.getElementById('loginView').hidden=true;document.getElementById('signupView').hidden=true;
    document.getElementById('authEmail').disabled=true;
    document.getElementById('authEmail').value=email;
-   document.getElementById('authPassword').hidden=true;
-   document.getElementById('loginBtn').hidden=true;
    logout.hidden=false;
  }else{
-   sessionBox.hidden=true;document.getElementById('accountToggle').textContent='♙ Cadastro';document.getElementById('modeLogin').hidden=false;document.getElementById('modeSignup').hidden=false;setAccountMode(accountMode);
-   document.getElementById('authName').hidden=false;document.getElementById('authEmail').disabled=false;
-   document.getElementById('authPassword').hidden=false;document.getElementById('loginBtn').hidden=false;
-   logout.hidden=true;
+   sessionBox.hidden=true;document.getElementById('accountToggle').textContent='♙ Entrar';document.getElementById('authEmail').disabled=false;
+   document.getElementById('authEmail').value='';document.getElementById('authPassword').value='';
+   showLoginView();logout.hidden=true;
  }
 }
 
@@ -352,11 +366,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElemen
 document.getElementById('accountToggle').addEventListener('click',openAccount);
 document.getElementById('accountClose').addEventListener('click',closeAccount);
 document.getElementById('accountShell').addEventListener('click',e=>{if(e.target.id==='accountShell')closeAccount();});
-document.getElementById('signupBtn').addEventListener('click',async()=>{
- const email=document.getElementById('authEmail').value.trim();
- const password=document.getElementById('authPassword').value;
+document.getElementById('signupForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const email=document.getElementById('signupEmail').value.trim();
+ const password=document.getElementById('signupPassword').value;
  const fullName=document.getElementById('authName').value.trim();
- if(!email||password.length<8){showAuthMessage('Informe um e-mail válido e uma senha com pelo menos 8 caracteres.',true);return;}
+ if(!fullName||!email||password.length<8){showAuthMessage('Informe nome, e-mail válido e senha com pelo menos 8 caracteres.',true);return;}
  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName}}});
  if(error){showAuthMessage(error.message,true);return;}
  if(data.session){
@@ -480,7 +495,25 @@ async function loadAdminPanel(){
   tr.appendChild(scheduleCell);return tr;
  });
  document.getElementById('adminOrders').replaceChildren(orderRows.length?adminTable(['Pedido','Cliente','WhatsApp','Bairro','Total','Criado em','Horário agendado','Status atual','Alterar status','Ajustar horário'],orderRows):document.createTextNode('Nenhum pedido registrado até agora.'));
- const catalogRows=catalog.map(item=>{const tr=document.createElement('tr');[item.name,item.item_type,adminMoney(item.price),item.active?'Ativo':'Inativo'].forEach(v=>tr.appendChild(adminCell(v)));const td=document.createElement('td');td.appendChild(adminButton('Editar preço',async()=>{const raw=prompt('Novo preço para '+item.name,Number(item.price).toFixed(2).replace('.',','));if(raw===null)return;const value=Number(raw.replace(',','.'));if(!Number.isFinite(value)||value<0){alert('Informe um preço válido.');return;}const {error}=await supabaseClient.from('catalog_items').update({price:value}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao salvar preço: '+error.message;return;}await loadAdminPanel();}));td.appendChild(document.createTextNode(' '));td.appendChild(adminButton(item.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('catalog_items').update({active:!item.active}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao alterar catálogo: '+error.message;return;}await loadAdminPanel();}));tr.appendChild(td);return tr;});
+ const catalogRows=catalog.map(item=>{
+  const tr=document.createElement('tr');
+  tr.appendChild(adminCell(item.name));tr.appendChild(adminCell(item.item_type));
+  const priceCell=document.createElement('td');const priceInput=document.createElement('input');
+  priceInput.type='number';priceInput.min='0';priceInput.step='0.01';priceInput.inputMode='decimal';priceInput.value=Number(item.price).toFixed(2);
+  priceInput.setAttribute('aria-label','Novo preço de '+item.name);priceInput.style.cssText='width:105px;padding:8px;border:1px solid #d8c8a5;border-radius:5px;font:inherit';
+  priceCell.appendChild(priceInput);tr.appendChild(priceCell);tr.appendChild(adminCell(item.active?'Ativo':'Inativo'));
+  const td=document.createElement('td');td.appendChild(adminButton('Salvar preço',async()=>{
+   const value=Number(priceInput.value);
+   if(!Number.isFinite(value)||value<0){alert('Informe um preço válido.');return;}
+   const {error}=await supabaseClient.from('catalog_items').update({price:value}).eq('id',item.id);
+   if(error){adminMessage.textContent='Erro ao salvar preço: '+error.message;return;}
+   adminMessage.textContent='Preço de '+item.name+' atualizado. Atualizando os valores do site...';
+   await loadAdminPanel();
+  }));
+  td.appendChild(document.createTextNode(' '));
+  td.appendChild(adminButton(item.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('catalog_items').update({active:!item.active}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao alterar catálogo: '+error.message;return;}await loadAdminPanel();}));
+  tr.appendChild(td);return tr;
+ });
  document.getElementById('adminCatalog').replaceChildren(adminTable(['Item','Tipo','Preço','Disponibilidade','Ações'],catalogRows));
  const feeRows=fees.map(f=>{const tr=document.createElement('tr');[f.neighborhood,adminMoney(f.fee),f.active?'Ativa':'Inativa'].forEach(v=>tr.appendChild(adminCell(v)));const td=document.createElement('td');td.appendChild(adminButton('Editar taxa',async()=>{const raw=prompt('Nova taxa para '+f.neighborhood,Number(f.fee).toFixed(2).replace('.',','));if(raw===null)return;const value=Number(raw.replace(',','.'));if(!Number.isFinite(value)||value<0){alert('Informe um valor válido.');return;}const {error}=await supabaseClient.from('travel_fees').update({fee:value}).eq('id',f.id);if(error){adminMessage.textContent='Erro ao salvar taxa: '+error.message;return;}await loadAdminPanel();}));td.appendChild(document.createTextNode(' '));td.appendChild(adminButton(f.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('travel_fees').update({active:!f.active}).eq('id',f.id);if(error){adminMessage.textContent='Erro ao alterar taxa: '+error.message;return;}await loadAdminPanel();}));tr.appendChild(td);return tr;});
  document.getElementById('adminFees').replaceChildren(adminTable(['Bairro','Taxa','Status','Ações'],feeRows));
