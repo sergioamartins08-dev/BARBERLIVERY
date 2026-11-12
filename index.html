@@ -331,7 +331,12 @@ async function routeSignedInUser(){
   closeAccount();adminShell.hidden=false;await loadAdminPanel();
  }else{
   adminShell.hidden=true;document.getElementById('accountShell').hidden=false;
-  await loadCustomerHistory();
+  if((currentSession.user.email||'').toLowerCase()===ADMIN_EMAIL){
+   document.getElementById('customerHistory').hidden=true;
+   showAuthMessage('Seu login administrativo foi reconhecido, mas a validação do painel falhou: '+(adminVerifyError||'erro não identificado')+'. Saia da conta e entre novamente. Se persistir, envie esta mensagem.',true);
+  }else{
+   await loadCustomerHistory();
+  }
  }
 }
 
@@ -424,11 +429,17 @@ const adminMoney=n=>fmt(Number(n||0));
 function adminCell(value){const td=document.createElement('td');td.textContent=value==null?'':String(value);return td;}
 function adminTable(headers,rows){const table=document.createElement('table');table.className='admin-table';const thead=document.createElement('thead');const tr=document.createElement('tr');headers.forEach(x=>{const th=document.createElement('th');th.textContent=x;tr.appendChild(th);});thead.appendChild(tr);table.appendChild(thead);const body=document.createElement('tbody');rows.forEach(r=>body.appendChild(r));table.appendChild(body);return table;}
 function adminButton(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);return b;}
+let adminVerifyError='';
 async function verifyAdmin(){
- isAdmin=false;
- if(!currentSession || currentSession.user.email?.toLowerCase()!==ADMIN_EMAIL){return false;}
+ isAdmin=false;adminVerifyError='';
+ if(!currentSession){adminVerifyError='Nenhuma sessão ativa.';return false;}
+ const {data:userData,error:userError}=await supabaseClient.auth.getUser();
+ if(userError){adminVerifyError='Falha ao validar a sessão: '+userError.message;return false;}
+ const verifiedEmail=(userData.user?.email||'').toLowerCase();
+ if(verifiedEmail!==ADMIN_EMAIL){adminVerifyError='O e-mail autenticado não corresponde à conta administrativa.';return false;}
  const {data,error}=await supabaseClient.rpc('admin_dashboard_customers');
- if(error){return false;}
+ if(error){adminVerifyError=error.message;return false;}
+ if(!Array.isArray(data)){adminVerifyError='A resposta de autorização do Supabase veio em formato inesperado.';return false;}
  isAdmin=true;return true;
 }
 async function loadAdminPanel(){
