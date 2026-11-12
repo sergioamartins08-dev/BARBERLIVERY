@@ -129,11 +129,15 @@ button,.btn,.select-btn{min-height:44px;touch-action:manipulation}
 
 /* Carrinho de compras em janela própria */
 .nav-actions{display:flex;align-items:center;gap:9px}.cart-toggle{background:#171613;color:#f2d99e;border-color:#b58a3b;padding:9px 13px;font-size:.84rem;white-space:nowrap}.cart-toggle span{display:inline-grid;place-items:center;min-width:21px;height:21px;margin-left:4px;padding:0 5px;border-radius:99px;background:#d8bd7a;color:#17130b;font-size:.75rem}.cart-modal{position:fixed;inset:0;z-index:40;background:#080807d9;display:none;align-items:flex-start;justify-content:center;padding:18px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch}.cart-modal:not([hidden]){display:flex}.cart-dialog{position:relative;width:min(1080px,100%);margin:auto;background:#eeebe4;border-radius:14px;padding:28px 0;max-height:none;box-shadow:0 24px 80px #0008}.cart-dialog>.wrap{width:94%}.cart-close{position:absolute;right:18px;top:10px;z-index:2;border:0;background:#171613;color:#f2d99e;border-radius:50%;width:42px;height:42px;font-size:1.8rem;cursor:pointer}.cart-dialog .section-head{padding-right:45px}.cart-dialog .orderbox{padding-bottom:12px}@media(max-width:600px){nav{gap:6px}.nav-actions{gap:5px}.cart-toggle{font-size:.72rem;padding:7px 8px;min-height:42px}.cart-toggle span{min-width:18px;height:18px}.cart-dialog{padding:22px 0;border-radius:10px}.cart-dialog>.wrap{width:94%}.cart-close{right:10px;top:8px}.cart-modal{padding:8px}.cart-dialog .orderbox{gap:12px}}
+
+/* Acesso flutuante ao carrinho após adicionar serviços */
+.floating-cart{position:fixed;z-index:25;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;width:max-content;max-width:calc(100% - 24px);padding:13px 20px;border:1px solid #d8bd7a;border-radius:999px;background:#171613;color:#f2d99e;box-shadow:0 8px 30px #0005;font:800 .94rem/1.2 Inter,Arial,sans-serif;cursor:pointer;white-space:nowrap}.floating-cart span{font-size:.8rem;color:#fff0c7;font-weight:600}.floating-cart[hidden]{display:none!important}.floating-cart:active{transform:translateX(-50%) scale(.98)}@media(max-width:600px){.floating-cart{bottom:calc(12px + env(safe-area-inset-bottom));width:calc(100% - 28px);padding:14px 12px;font-size:.9rem;gap:8px}.floating-cart span{font-size:.76rem}}
 </style>
 </head>
 <body>
 <header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a></div><div class="nav-actions"><button class="btn cart-toggle" id="cartToggle" type="button" aria-label="Abrir carrinho">🛒 Carrinho <span id="cartCount">0</span></button><button class="btn account-toggle" id="accountToggle" type="button">Entrar / Minha conta</button></div></nav></div></header>
 
+<button class="floating-cart" id="floatingCart" type="button" hidden>🛒 Ver meu carrinho <span id="floatingCartInfo">0 itens · R$ 0</span></button>
 <div class="account-shell" id="accountShell" hidden>
   <div class="account-panel">
     <button class="account-close" id="accountClose" type="button" aria-label="Fechar">×</button>
@@ -263,6 +267,9 @@ function render(){
  else {list.innerHTML=''; selected.forEach((x,k)=>{const row=document.createElement('div');row.className='selected-row';row.innerHTML='<span></span><strong></strong>';row.children[0].textContent=x.name;row.children[1].textContent=fmt(x.price);list.appendChild(row);});}
  document.getElementById('total').textContent=fmt(total);
  document.getElementById('cartCount').textContent=selected.size;
+ const floating=document.getElementById('floatingCart');
+ floating.hidden=!selected.size||!document.getElementById('pedido').hidden;
+ document.getElementById('floatingCartInfo').textContent=selected.size+' '+(selected.size===1?'item':'itens')+' · '+fmt(total);
  const preview=document.getElementById('discountPreview');
  if(currentSession && discountEligible && total>0){preview.innerHTML='<strong>10% de desconto disponível</strong> na sua primeira compra concluída. Estimativa: '+fmt(total*.1)+'. A confirmação é feita pelo sistema no envio do pedido.';}
  else if(currentSession){preview.textContent='O desconto de primeira compra já foi utilizado. Você continuará comprando pelo preço normal.';}
@@ -330,8 +337,9 @@ async function routeSignedInUser(){
 
 function openAccount(){document.getElementById('accountShell').hidden=false;}
 function closeAccount(){document.getElementById('accountShell').hidden=true;}
-function openCart(){document.getElementById('pedido').hidden=false;document.body.style.overflow='hidden';}
-function closeCart(){document.getElementById('pedido').hidden=true;document.body.style.overflow='';}
+function openCart(){document.getElementById('pedido').hidden=false;document.getElementById('floatingCart').hidden=true;document.body.style.overflow='hidden';}
+function closeCart(){document.getElementById('pedido').hidden=true;document.body.style.overflow='';document.getElementById('floatingCart').hidden=!selected.size;}
+document.getElementById('floatingCart').addEventListener('click',openCart);
 document.getElementById('cartToggle').addEventListener('click',openCart);
 document.getElementById('cartClose').addEventListener('click',closeCart);
 document.getElementById('pedido').addEventListener('click',e=>{if(e.target.id==='pedido')closeCart();});
