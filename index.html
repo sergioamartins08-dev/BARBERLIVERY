@@ -397,7 +397,7 @@ document.getElementById('logoutBtn').addEventListener('click',async()=>{
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
  currentSession=session;updateAccountUI();refreshDiscountStatus();if(session)routeSignedInUser();else{adminShell.hidden=true;document.getElementById('customerHistory').hidden=true;}
 });
-(async()=>{const {data}=await supabaseClient.auth.getSession();currentSession=data.session;updateAccountUI();await refreshDiscountStatus();if(currentSession)await routeSignedInUser();})();
+(async()=>{await loadPublicCatalog();const {data}=await supabaseClient.auth.getSession();currentSession=data.session;updateAccountUI();await refreshDiscountStatus();if(currentSession)await routeSignedInUser();})();
 
 document.querySelectorAll('.service,.cart-option').forEach(card=>{const target=card.classList.contains('service')?card.querySelector('button'):card;target.addEventListener('click',()=>{
  const name=card.dataset.name;
@@ -457,6 +457,28 @@ async function verifyAdmin(){
  if(!Array.isArray(data)){adminVerifyError='A resposta de autorização do Supabase veio em formato inesperado.';return false;}
  isAdmin=true;return true;
 }
+function applyCatalogPrices(catalog){
+ catalog.forEach(item=>{
+  const service=[...document.querySelectorAll('.service')].find(el=>el.dataset.name===item.name);
+  if(service){service.dataset.price=String(item.price);const label=service.querySelector('.price');if(label)label.textContent=fmt(item.price);}
+  document.querySelectorAll('.cart-option').forEach(btn=>{
+   if(btn.dataset.name===item.name){
+    btn.dataset.price=String(item.price);
+    const card=btn.closest('.combo-card,.pricecard');
+    const priceLabel=card?.querySelector('.combo-bottom strong,.price');
+    if(priceLabel)priceLabel.textContent=fmt(item.price);
+    const vipHeading=btn.closest('.vip-card')?.querySelectorAll('h3');
+    if(vipHeading){vipHeading.forEach(h=>{if(h.textContent.includes(item.name)){const em=h.querySelector('em');if(em)em.textContent=fmt(item.price);}});}
+   }
+  });
+  const plan=[...document.querySelectorAll('.plan')].find(el=>el.querySelector('h3')?.textContent.trim().toLowerCase()===item.name.toLowerCase());
+  if(plan){const price=plan.querySelector('.big');if(price)price.textContent=fmt(item.price)+'/mês';}
+ });
+}
+async function loadPublicCatalog(){
+ const {data,error}=await supabaseClient.from('catalog_items').select('name,price,active').eq('active',true);
+ if(!error&&Array.isArray(data)){applyCatalogPrices(data);}
+}
 async function loadAdminPanel(){
  if(!isAdmin || !currentSession){adminMessage.textContent='Acesso não autorizado.';return;}
  adminMessage.textContent='Atualizando dados do painel...';
@@ -469,6 +491,7 @@ async function loadAdminPanel(){
  const errs=[ordersRes.error,catalogRes.error,feesRes.error,customersRes.error].filter(Boolean);
  if(errs.length){adminMessage.textContent='Não foi possível carregar tudo: '+errs.map(e=>e.message).join(' | ');return;}
  const orders=ordersRes.data||[],catalog=catalogRes.data||[],fees=feesRes.data||[],customers=customersRes.data||[];
+ applyCatalogPrices(catalog);
  document.getElementById('adminOrderCount').textContent=orders.length;
  document.getElementById('adminOpenCount').textContent=orders.filter(o=>!['completed','cancelled'].includes(o.status)).length;
  document.getElementById('adminCustomerCount').textContent=customers.length;
