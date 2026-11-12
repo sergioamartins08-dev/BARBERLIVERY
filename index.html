@@ -431,13 +431,26 @@ async function loadAdminPanel(){
  document.getElementById('adminRevenue').textContent=adminMoney(orders.filter(o=>o.status==='completed').reduce((n,o)=>n+Number(o.total||0),0));
  const orderRows=orders.map(o=>{
   const tr=document.createElement('tr');
-  [String(o.id).slice(0,8),o.customer_name,o.customer_phone,o.neighborhood,adminMoney(o.total),new Date(o.created_at).toLocaleString('pt-BR'),o.status].forEach(v=>tr.appendChild(adminCell(v)));
+  [String(o.id).slice(0,8),o.customer_name,o.customer_phone,o.neighborhood,adminMoney(o.total),new Date(o.created_at).toLocaleString('pt-BR'),o.preferred_datetime||'A combinar',o.status].forEach(v=>tr.appendChild(adminCell(v)));
   const td=document.createElement('td');const sel=document.createElement('select');sel.className='admin-status';
   ['received','confirmed','completed','cancelled'].forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=({received:'Recebido',confirmed:'Confirmado',completed:'Concluído',cancelled:'Cancelado'})[v];op.selected=o.status===v;sel.appendChild(op);});
   sel.addEventListener('change',async()=>{const {error}=await supabaseClient.from('orders').update({status:sel.value}).eq('id',o.id);if(error){adminMessage.textContent='Erro ao atualizar pedido: '+error.message;return;}adminMessage.textContent='Status do pedido atualizado.';await loadAdminPanel();});
-  td.appendChild(sel);tr.appendChild(td);return tr;
+  td.appendChild(sel);tr.appendChild(td);
+  const scheduleCell=document.createElement('td');
+  scheduleCell.appendChild(adminButton('Ajustar horário',async()=>{
+   const current=o.preferred_datetime||'';
+   const next=prompt('Informe a nova data e horário do atendimento. Exemplo: 2026-11-13 às 15:00. Use este ajuste quando precisar de mais tempo para os serviços.',current);
+   if(next===null)return;
+   if(!next.trim()){alert('Informe a nova data e horário.');return;}
+   const {data,error}=await supabaseClient.from('orders').update({preferred_datetime:next.trim()}).eq('id',o.id).select('id').maybeSingle();
+   if(error){adminMessage.textContent='Não foi possível ajustar o horário: '+error.message;return;}
+   if(!data){adminMessage.textContent='O horário não foi alterado. Verifique a permissão administrativa.';return;}
+   adminMessage.textContent='Horário atualizado para '+next.trim()+'. Entre em contato com o cliente para avisar a mudança.';
+   await loadAdminPanel();
+  }));
+  tr.appendChild(scheduleCell);return tr;
  });
- document.getElementById('adminOrders').replaceChildren(orderRows.length?adminTable(['Pedido','Cliente','WhatsApp','Bairro','Total','Criado em','Status atual','Alterar status'],orderRows):document.createTextNode('Nenhum pedido registrado até agora.'));
+ document.getElementById('adminOrders').replaceChildren(orderRows.length?adminTable(['Pedido','Cliente','WhatsApp','Bairro','Total','Criado em','Horário agendado','Status atual','Alterar status','Ajustar horário'],orderRows):document.createTextNode('Nenhum pedido registrado até agora.'));
  const catalogRows=catalog.map(item=>{const tr=document.createElement('tr');[item.name,item.item_type,adminMoney(item.price),item.active?'Ativo':'Inativo'].forEach(v=>tr.appendChild(adminCell(v)));const td=document.createElement('td');td.appendChild(adminButton('Editar preço',async()=>{const raw=prompt('Novo preço para '+item.name,Number(item.price).toFixed(2).replace('.',','));if(raw===null)return;const value=Number(raw.replace(',','.'));if(!Number.isFinite(value)||value<0){alert('Informe um preço válido.');return;}const {error}=await supabaseClient.from('catalog_items').update({price:value}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao salvar preço: '+error.message;return;}await loadAdminPanel();}));td.appendChild(document.createTextNode(' '));td.appendChild(adminButton(item.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('catalog_items').update({active:!item.active}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao alterar catálogo: '+error.message;return;}await loadAdminPanel();}));tr.appendChild(td);return tr;});
  document.getElementById('adminCatalog').replaceChildren(adminTable(['Item','Tipo','Preço','Disponibilidade','Ações'],catalogRows));
  const feeRows=fees.map(f=>{const tr=document.createElement('tr');[f.neighborhood,adminMoney(f.fee),f.active?'Ativa':'Inativa'].forEach(v=>tr.appendChild(adminCell(v)));const td=document.createElement('td');td.appendChild(adminButton('Editar taxa',async()=>{const raw=prompt('Nova taxa para '+f.neighborhood,Number(f.fee).toFixed(2).replace('.',','));if(raw===null)return;const value=Number(raw.replace(',','.'));if(!Number.isFinite(value)||value<0){alert('Informe um valor válido.');return;}const {error}=await supabaseClient.from('travel_fees').update({fee:value}).eq('id',f.id);if(error){adminMessage.textContent='Erro ao salvar taxa: '+error.message;return;}await loadAdminPanel();}));td.appendChild(document.createTextNode(' '));td.appendChild(adminButton(f.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('travel_fees').update({active:!f.active}).eq('id',f.id);if(error){adminMessage.textContent='Erro ao alterar taxa: '+error.message;return;}await loadAdminPanel();}));tr.appendChild(td);return tr;});
