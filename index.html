@@ -135,18 +135,18 @@ button,.btn,.select-btn{min-height:44px;touch-action:manipulation}
 </style>
 </head>
 <body>
-<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a></div><div class="nav-actions"><button class="btn cart-toggle" id="cartToggle" type="button" aria-label="Abrir carrinho">🛒 Carrinho <span id="cartCount">0</span></button><button class="btn account-toggle" id="accountToggle" type="button">Entrar / Minha conta</button></div></nav></div></header>
+<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a></div><div class="nav-actions"><button class="btn cart-toggle" id="cartToggle" type="button" aria-label="Abrir carrinho">🛒 Carrinho <span id="cartCount">0</span></button><button class="btn account-toggle" id="accountToggle" type="button">♙ Cadastro</button></div></nav></div></header>
 
 <button class="floating-cart" id="floatingCart" type="button" hidden>🛒 Ver meu carrinho <span id="floatingCartInfo">0 itens · R$ 0</span></button>
 <div class="account-shell" id="accountShell" hidden>
   <div class="account-panel">
     <button class="account-close" id="accountClose" type="button" aria-label="Fechar">×</button>
-    <div class="eyebrow">Área do cliente</div>
-    <h2>Minha conta BARBERLIVERY</h2>
-    <p class="small">Entre para acompanhar seus atendimentos e consultar seu histórico. O cadastro é opcional para fazer pedidos.</p>
+    <div class="eyebrow">Área do usuário</div>
+    <h2>Acesse sua conta</h2>
+    <p class="small">Entre para acessar sua conta ou crie seu cadastro para acompanhar seus atendimentos e consultar seu histórico.</p>
     <div id="accountSession" class="account-session" hidden></div>
     <section id="customerHistory" class="admin-section" hidden><h3>Meus atendimentos concluídos</h3><div id="customerHistoryList">Carregando...</div></section>
-    <div class="account-actions" style="margin:16px 0"><button class="btn dark" id="modeLogin" type="button">Já tenho conta / Entrar</button><button class="btn" id="modeSignup" type="button">Criar conta</button></div>
+    <div class="account-actions account-mode-switch" style="margin:16px 0"><button class="btn dark" id="modeLogin" type="button" aria-pressed="true">Entrar</button><button class="btn" id="modeSignup" type="button" aria-pressed="false">Cadastro</button></div>
     <form id="authForm" class="fields">
       <label>Nome<input id="authName" autocomplete="name" placeholder="Seu nome"></label>
       <label>E-mail<input id="authEmail" type="email" required autocomplete="email" placeholder="voce@email.com"></label>
@@ -283,7 +283,7 @@ async function refreshDiscountStatus(){
  render();
 }
 let accountMode='login';
-function setAccountMode(mode){accountMode=mode;const signup=mode==='signup';document.getElementById('authName').hidden=!signup;document.getElementById('signupBtn').hidden=!signup;document.getElementById('loginBtn').hidden=signup;document.getElementById('modeLogin').classList.toggle('dark',!signup);document.getElementById('modeSignup').classList.toggle('dark',signup);document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';}
+function setAccountMode(mode){accountMode=mode;const signup=mode==='signup';document.getElementById('authName').hidden=!signup;document.getElementById('signupBtn').hidden=!signup;document.getElementById('loginBtn').hidden=signup;document.getElementById('modeLogin').classList.toggle('dark',!signup);document.getElementById('modeSignup').classList.toggle('dark',signup);document.getElementById('modeLogin').setAttribute('aria-pressed',String(!signup));document.getElementById('modeSignup').setAttribute('aria-pressed',String(signup));document.getElementById('authPassword').autocomplete=signup?'new-password':'current-password';showAuthMessage(signup?'Preencha seu nome, e-mail e senha para criar seu cadastro.':'Informe seu e-mail e senha para entrar.');}
 document.getElementById('modeLogin').addEventListener('click',()=>setAccountMode('login'));
 document.getElementById('modeSignup').addEventListener('click',()=>setAccountMode('signup'));
 setAccountMode('login');
@@ -293,7 +293,7 @@ function updateAccountUI(){
  const logout=document.getElementById('logoutBtn');
  if(currentSession){
    const email=currentSession.user.email||'Cliente';
-   sessionBox.hidden=false;sessionBox.textContent='Conectado como '+email;
+   sessionBox.hidden=false;sessionBox.textContent='Conectado como '+email;document.getElementById('accountToggle').textContent='♙ Minha conta';
    document.getElementById('signupBtn').hidden=true;document.getElementById('modeLogin').hidden=true;document.getElementById('modeSignup').hidden=true;
    document.getElementById('authName').hidden=true;
    document.getElementById('authEmail').disabled=true;
@@ -302,7 +302,7 @@ function updateAccountUI(){
    document.getElementById('loginBtn').hidden=true;
    logout.hidden=false;
  }else{
-   sessionBox.hidden=true;document.getElementById('modeLogin').hidden=false;document.getElementById('modeSignup').hidden=false;setAccountMode(accountMode);
+   sessionBox.hidden=true;document.getElementById('accountToggle').textContent='♙ Cadastro';document.getElementById('modeLogin').hidden=false;document.getElementById('modeSignup').hidden=false;setAccountMode(accountMode);
    document.getElementById('authName').hidden=false;document.getElementById('authEmail').disabled=false;
    document.getElementById('authPassword').hidden=false;document.getElementById('loginBtn').hidden=false;
    logout.hidden=true;
