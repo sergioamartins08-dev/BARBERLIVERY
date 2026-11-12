@@ -392,7 +392,7 @@ document.getElementById('bookingForm').addEventListener('submit',async e=>{
  });
  if(error){alert('Não foi possível registrar o pedido: '+error.message);return;}
  const services=chosen.map(x=>'• '+x.name+': '+fmt(x.price)).join('\n');
- const msg=`Olá! Gostaria de solicitar um agendamento na BARBERLIVERY.\n\nPedido: ${order.order_id}\nServiços:\n${services}\nSubtotal: ${fmt(order.subtotal)}\nTaxa de deslocamento: ${fmt(order.travel_fee)}\nDesconto de primeira compra: ${fmt(order.discount_amount)}\nTotal estimado: ${fmt(order.total)}\n\nNome: ${v('clientName')}\nMeu WhatsApp: ${v('clientPhone')}\nEndereço: ${v('clientAddress')}\nBairro: ${neighborhood}\nPreferência: ${v('clientWhen')||'A combinar'}\nObservações: ${v('clientNotes')||'Nenhuma'}\n\nPor favor, confirme disponibilidade e horário.`;
+ const msg=`Olá! Gostaria de solicitar um agendamento na BARBERLIVERY.\n\nPedido: ${order.order_id}\nServiços:\n${services}\nSubtotal: ${fmt(order.subtotal)}\nTaxa de deslocamento: ${fmt(order.travel_fee)}\nDesconto de primeira compra: ${fmt(order.discount_amount)}\nTotal estimado: ${fmt(order.total)}\n\nNome: ${v('clientName')}\nMeu WhatsApp: ${v('clientPhone')}\nEndereço: ${v('clientAddress')}\nBairro: ${neighborhood}\nPreferência: ${v('clientDate')} às ${v('clientTime')}\nChegada prevista do profissional: 15 minutos antes do horário agendado.\nObservações: ${v('clientNotes')||'Nenhuma'}\n\nPor favor, confirme disponibilidade e horário.`;
  window.location.href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
  alert(order.discount_applied?'Pedido registrado! Seu desconto de 10% foi aplicado nesta primeira compra.':'Pedido registrado!');
 });
