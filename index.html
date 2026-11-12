@@ -136,10 +136,32 @@ button,.btn,.select-btn{min-height:44px;touch-action:manipulation}
 #loginView,#signupView{margin-top:8px}
 #loginView .btn,#signupView .btn{width:100%}
 #loginView .select-btn,#signupView .select-btn{background:#f7f1e5;border-color:#d8c8a5}
+
+/* Correções de exibição das telas de acesso e cabeçalho mobile */
+#loginView[hidden],#signupView[hidden]{display:none!important}
+@media(max-width:600px){
+ header .wrap{width:100%;padding:0 8px}
+ header nav{width:100%;min-width:0;display:flex;gap:5px;justify-content:space-between;overflow:hidden}
+ header .brand{flex:1 1 auto;min-width:0;font-size:clamp(.62rem,3.2vw,.78rem);letter-spacing:.35px;white-space:nowrap;overflow:hidden;text-overflow:clip}
+ header .nav-actions{flex:0 0 auto;min-width:0;gap:4px;margin-left:auto}
+ header .nav-actions .btn{width:auto!important;min-width:0;min-height:38px;padding:7px 8px;white-space:nowrap;line-height:1.1}
+ header .cart-toggle{font-size:0!important;padding:7px 8px!important;display:inline-flex;align-items:center;gap:4px}
+ header .cart-toggle:before{content:"🛒";font-size:16px;line-height:1}
+ header .cart-toggle span{font-size:.68rem;min-width:18px;height:18px;margin:0;padding:0 4px}
+ header .account-toggle{font-size:clamp(.62rem,2.8vw,.72rem)!important;padding:7px 7px!important}
+}
+@media(max-width:380px){
+ header .wrap{padding:0 6px}
+ header nav{gap:3px}
+ header .brand{font-size:.61rem;letter-spacing:0}
+ header .nav-actions{gap:3px}
+ header .nav-actions .btn{padding:6px!important}
+ header .account-toggle{font-size:.61rem!important}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a></div><div class="nav-actions"><button class="btn cart-toggle" id="cartToggle" type="button" aria-label="Abrir carrinho">🛒 Carrinho <span id="cartCount">0</span></button><button class="btn account-toggle" id="accountToggle" type="button">♙ Cadastro</button></div></nav></div></header>
+<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a></div><div class="nav-actions"><button class="btn cart-toggle" id="cartToggle" type="button" aria-label="Abrir carrinho">🛒 Carrinho <span id="cartCount">0</span></button><button class="btn account-toggle" id="accountToggle" type="button">♙ Entrar</button></div></nav></div></header>
 
 <button class="floating-cart" id="floatingCart" type="button" hidden>🛒 Ver meu carrinho <span id="floatingCartInfo">0 itens · R$ 0</span></button>
 <div class="account-shell" id="accountShell" hidden>
@@ -354,7 +376,7 @@ async function routeSignedInUser(){
  }
 }
 
-function openAccount(){document.getElementById('accountShell').hidden=false;}
+function openAccount(){if(!currentSession)showLoginView();document.getElementById('accountShell').hidden=false;}
 function closeAccount(){document.getElementById('accountShell').hidden=true;}
 function openCart(){document.getElementById('pedido').hidden=false;document.getElementById('floatingCart').hidden=true;document.body.style.overflow='hidden';}
 function closeCart(){document.getElementById('pedido').hidden=true;document.body.style.overflow='';document.getElementById('floatingCart').hidden=!selected.size;}
