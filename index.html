@@ -574,3 +574,100 @@ render();
 verifyAdmin();
 </script>
 </body></html>
+
+/* Correção definitiva: alternância de login/cadastro e cabeçalho mobile */
+#loginView[hidden],
+#signupView[hidden],
+#customerHistory[hidden],
+#accountSession[hidden],
+#logoutBtn[hidden],
+#pedido[hidden],
+#floatingCart[hidden]{
+  display:none !important;
+}
+#loginView:not([hidden]),
+#signupView:not([hidden]){
+  display:block !important;
+}
+@media(max-width:600px){
+  header .wrap{
+    width:100% !important;
+    max-width:100% !important;
+    padding-left:8px !important;
+    padding-right:8px !important;
+  }
+  header nav{
+    width:100%;
+    min-width:0;
+    min-height:58px;
+    display:flex;
+    flex-wrap:nowrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:5px;
+    overflow:hidden;
+  }
+  header .brand{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:100%;
+    font-size:clamp(.62rem,3.1vw,.82rem);
+    letter-spacing:clamp(0px,.25vw,1px);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:clip;
+  }
+  header .nav-actions{
+    display:flex;
+    flex:0 0 auto;
+    min-width:0;
+    gap:4px;
+    margin-left:auto;
+    align-items:center;
+  }
+  header .nav-actions .btn{
+    min-width:0;
+    min-height:38px;
+    width:auto !important;
+    padding:6px 8px !important;
+    font-size:clamp(.62rem,2.8vw,.75rem) !important;
+    line-height:1;
+    white-space:nowrap;
+  }
+  header .cart-toggle{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    font-size:0 !important;
+    padding:6px 8px !important;
+  }
+  header .cart-toggle:before{
+    content:"🛒";
+    font-size:16px;
+    line-height:1;
+  }
+  header .cart-toggle span{
+    display:inline-grid;
+    min-width:18px;
+    height:18px;
+    margin:0;
+    padding:0 4px;
+    font-size:11px;
+  }
+  header .account-toggle{
+    font-size:clamp(.61rem,2.7vw,.72rem) !important;
+    padding:6px 7px !important;
+    max-width:76px;
+    overflow:hidden;
+    text-overflow:clip;
+  }
+}
+@media(max-width:370px){
+  header .wrap{padding-left:6px !important;padding-right:6px !important}
+  header nav{gap:3px}
+  header .brand{font-size:.59rem;letter-spacing:0}
+  header .nav-actions{gap:3px}
+  header .nav-actions .btn{padding:5px 6px !important}
+  header .account-toggle{font-size:.59rem !important;max-width:68px}
+}
