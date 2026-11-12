@@ -81,15 +81,16 @@ footer{background:#0d0d0c;color:#c8c1b4;padding:28px 0;font-size:.88rem}
 </style>
 </head>
 <body>
-<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a><a href="#pedido">Agendar</a></div><div style="display:flex;gap:8px;align-items:center"><button class="btn account-toggle admin-toggle" id="adminToggle" type="button" hidden>Painel admin</button><button class="btn account-toggle" id="accountToggle" type="button">Minha conta</button></div></nav></div></header>
+<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a><a href="#pedido">Agendar</a></div><button class="btn account-toggle" id="accountToggle" type="button">Entrar / Minha conta</button></nav></div></header>
 
 <div class="account-shell" id="accountShell" hidden>
   <div class="account-panel">
     <button class="account-close" id="accountClose" type="button" aria-label="Fechar">×</button>
     <div class="eyebrow">Área do cliente</div>
     <h2>Minha conta BARBERLIVERY</h2>
-    <p class="small">O cadastro é opcional. Clientes cadastrados recebem 10% de desconto somente na primeira compra concluída.</p>
+    <p class="small">Entre para acompanhar seus atendimentos e consultar seu histórico. O cadastro é opcional para fazer pedidos.</p>
     <div id="accountSession" class="account-session" hidden></div>
+    <section id="customerHistory" class="admin-section" hidden><h3>Meus atendimentos concluídos</h3><div id="customerHistoryList">Carregando...</div></section>
     <div class="account-actions" style="margin:16px 0"><button class="btn dark" id="modeLogin" type="button">Já tenho conta / Entrar</button><button class="btn" id="modeSignup" type="button">Criar conta</button></div>
     <form id="authForm" class="fields">
       <label>Nome<input id="authName" autocomplete="name" placeholder="Seu nome"></label>
@@ -248,6 +249,33 @@ function updateAccountUI(){
    logout.hidden=true;
  }
 }
+
+async function loadCustomerHistory(){
+ const host=document.getElementById('customerHistoryList');
+ if(!currentSession){document.getElementById('customerHistory').hidden=true;return;}
+ document.getElementById('customerHistory').hidden=false;
+ host.textContent='Buscando seus atendimentos concluídos...';
+ const {data,error}=await supabaseClient.from('orders').select('id,items,total,created_at,neighborhood').eq('user_id',currentSession.user.id).eq('status','completed').order('created_at',{ascending:false});
+ if(error){host.textContent='Não foi possível carregar o histórico agora: '+error.message;return;}
+ if(!data?.length){host.textContent='Seus atendimentos concluídos aparecerão aqui após a finalização dos pedidos.';return;}
+ const table=document.createElement('table');table.className='admin-table';
+ const thead=document.createElement('thead');const trh=document.createElement('tr');
+ ['Data','Serviços realizados','Região','Total'].forEach(t=>{const th=document.createElement('th');th.textContent=t;trh.appendChild(th);});thead.appendChild(trh);table.appendChild(thead);
+ const tbody=document.createElement('tbody');
+ data.forEach(o=>{const tr=document.createElement('tr');const date=document.createElement('td');date.textContent=new Date(o.created_at).toLocaleDateString('pt-BR');tr.appendChild(date);const items=document.createElement('td');items.textContent=(o.items||[]).map(i=>(i.quantity>1?i.quantity+'× ':'')+i.name).join(', ');tr.appendChild(items);const area=document.createElement('td');area.textContent=o.neighborhood;tr.appendChild(area);const total=document.createElement('td');total.textContent=fmt(o.total);tr.appendChild(total);tbody.appendChild(tr);});
+ table.appendChild(tbody);host.replaceChildren(table);
+}
+async function routeSignedInUser(){
+ if(!currentSession)return;
+ const admin=await verifyAdmin();
+ if(admin){
+  closeAccount();adminShell.hidden=false;await loadAdminPanel();
+ }else{
+  adminShell.hidden=true;document.getElementById('accountShell').hidden=false;
+  await loadCustomerHistory();
+ }
+}
+
 function openAccount(){document.getElementById('accountShell').hidden=false;}
 function closeAccount(){document.getElementById('accountShell').hidden=true;}
 document.getElementById('accountToggle').addEventListener('click',openAccount);
@@ -269,17 +297,17 @@ document.getElementById('authForm').addEventListener('submit',async e=>{
  const password=document.getElementById('authPassword').value;
  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
  if(error){showAuthMessage(error.message,true);return;}
- currentSession=data.session;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Login realizado.');
+ currentSession=data.session;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Login realizado.');await routeSignedInUser();
 });
 document.getElementById('logoutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
  if(error){showAuthMessage(error.message,true);return;}
- currentSession=null;discountEligible=false;isAdmin=false;document.getElementById('adminToggle').hidden=true;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Você saiu da sua conta.');
+ currentSession=null;discountEligible=false;isAdmin=false;adminShell.hidden=true;document.getElementById('customerHistory').hidden=true;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Você saiu da sua conta.');
 });
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
- currentSession=session;updateAccountUI();refreshDiscountStatus();verifyAdmin();
+ currentSession=session;updateAccountUI();refreshDiscountStatus();if(session)routeSignedInUser();else{adminShell.hidden=true;document.getElementById('customerHistory').hidden=true;}
 });
-(async()=>{const {data}=await supabaseClient.auth.getSession();currentSession=data.session;updateAccountUI();await refreshDiscountStatus();})();
+(async()=>{const {data}=await supabaseClient.auth.getSession();currentSession=data.session;updateAccountUI();await refreshDiscountStatus();if(currentSession)await routeSignedInUser();})();
 
 document.querySelectorAll('.service,.cart-option').forEach(card=>{const target=card.classList.contains('service')?card.querySelector('button'):card;target.addEventListener('click',()=>{
  const name=card.dataset.name;
@@ -319,10 +347,10 @@ function adminTable(headers,rows){const table=document.createElement('table');ta
 function adminButton(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);return b;}
 async function verifyAdmin(){
  isAdmin=false;
- if(!currentSession || currentSession.user.email?.toLowerCase()!==ADMIN_EMAIL){document.getElementById('adminToggle').hidden=true;return false;}
+ if(!currentSession || currentSession.user.email?.toLowerCase()!==ADMIN_EMAIL){return false;}
  const {data,error}=await supabaseClient.rpc('admin_dashboard_customers');
- if(error){document.getElementById('adminToggle').hidden=true;return false;}
- isAdmin=true;document.getElementById('adminToggle').hidden=false;return true;
+ if(error){return false;}
+ isAdmin=true;return true;
 }
 async function loadAdminPanel(){
  if(!isAdmin || !currentSession){adminMessage.textContent='Acesso não autorizado.';return;}
@@ -357,7 +385,7 @@ async function loadAdminPanel(){
  document.getElementById('adminCustomers').replaceChildren(customerRows.length?adminTable(['Nome','E-mail','Cadastro'],customerRows):document.createTextNode('Nenhum cliente cadastrado.'));
  adminMessage.textContent='Painel atualizado. '+orders.length+' pedido(s), '+catalog.length+' itens no catálogo e '+customers.length+' cliente(s).';
 }
-document.getElementById('adminToggle').addEventListener('click',async()=>{adminShell.hidden=false;await loadAdminPanel();});
+
 document.getElementById('adminClose').addEventListener('click',()=>{adminShell.hidden=true;});
 
  document.getElementById('year').textContent=new Date().getFullYear();
