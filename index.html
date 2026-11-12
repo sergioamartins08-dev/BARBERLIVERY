@@ -286,10 +286,14 @@ document.getElementById('signupBtn').addEventListener('click',async()=>{
  const password=document.getElementById('authPassword').value;
  const fullName=document.getElementById('authName').value.trim();
  if(!email||password.length<8){showAuthMessage('Informe um e-mail válido e uma senha com pelo menos 8 caracteres.',true);return;}
- const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:window.location.origin}});
+ const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName}}});
  if(error){showAuthMessage(error.message,true);return;}
- if(data.session){currentSession=data.session;updateAccountUI();await refreshDiscountStatus();await verifyAdmin();showAuthMessage('Conta criada! Seu desconto de primeira compra está disponível.');}
- else{showAuthMessage('Cadastro iniciado. Confirme seu e-mail e depois entre na sua conta.');}
+ if(data.session){
+  currentSession=data.session;updateAccountUI();await refreshDiscountStatus();
+  const admin=await verifyAdmin();
+  if(admin){await routeSignedInUser();showAuthMessage('Conta administrativa criada. Abrindo o painel.');}
+  else{closeAccount();document.getElementById('serviceGrid').scrollIntoView({behavior:'smooth',block:'start'});showAuthMessage('Conta criada com sucesso! Escolha seus serviços abaixo. Seu desconto de primeira compra está disponível.');}
+ }else{showAuthMessage('A conta foi criada, mas a confirmação por e-mail ainda está ativa no Supabase. Desative “Confirm email” nas configurações de autenticação para liberar o acesso imediato.',true);}
 });
 document.getElementById('authForm').addEventListener('submit',async e=>{
  e.preventDefault();
