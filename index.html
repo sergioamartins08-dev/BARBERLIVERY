@@ -78,6 +78,54 @@ footer{background:#0d0d0c;color:#c8c1b4;padding:28px 0;font-size:.88rem}
 .admin-message{font-size:.9rem;color:#73551e;margin:8px 0}
 @media(max-width:650px){.admin-panel{padding:13px}.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-head{top:-13px}.admin-stat{padding:10px}}
 
+
+/* Ajustes de responsividade e usabilidade em celulares/iPhone */
+html{scroll-padding-top:76px;-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{width:100%;max-width:100%;overflow-x:hidden}
+img,svg,video,iframe{max-width:100%}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button,.btn,.select-btn{min-height:44px;touch-action:manipulation}
+.fields input,.fields select,.fields textarea{font-size:16px;min-width:0}
+.panel,.service,.combo-card,.pricecard,.plan,.zone{min-width:0}
+.account-shell,.admin-shell{padding: max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch}
+.account-panel{max-height:calc(100dvh - 32px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.admin-panel{max-height:calc(100dvh - 24px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.admin-section{max-width:100%;-webkit-overflow-scrolling:touch}
+.admin-table{white-space:normal}
+#pedido,#servicos,#planos,#regioes,#proteses{scroll-margin-top:78px}
+@media(max-width:600px){
+  header .wrap{width:94%}
+  nav{gap:8px;min-height:64px;flex-wrap:nowrap}
+  .brand{font-size:.83rem;letter-spacing:1px;white-space:nowrap}
+  .account-toggle{font-size:.75rem;padding:8px 9px;min-height:42px;flex:0 0 auto}
+  .hero .wrap,.wrap{width:92%}
+  .actions{display:grid;grid-template-columns:1fr;gap:10px}
+  .actions .btn{width:100%;text-align:center}
+  section{padding:42px 0}
+  .panel{padding:15px;border-radius:10px}
+  .fields{gap:13px}
+  .fields label{display:block;min-width:0}
+  .fields input,.fields select,.fields textarea{display:block;width:100%;min-height:46px}
+  .fields textarea{min-height:92px}
+  .btn,.select-btn{width:100%;white-space:normal;line-height:1.3;padding:12px 14px}
+  .account-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .account-panel{padding:20px 16px;width:100%;border-radius:12px}
+  .account-panel h2{font-size:1.35rem;line-height:1.2;padding-right:25px}
+  .account-close{right:10px;top:7px}
+  .admin-panel{width:100%;height:auto;max-height:calc(100dvh - 24px);padding:12px;border-radius:10px}
+  .admin-head h2{font-size:1.15rem}
+  .admin-table{min-width:560px}
+  .admin-section{padding:11px}
+  .combo-content p,.service p{min-height:0}
+  .total{gap:12px;align-items:center;font-size:1rem}
+  .selected-row{align-items:flex-start;flex-wrap:wrap}
+}
+@media(max-width:360px){
+  .brand{font-size:.74rem;letter-spacing:.5px}
+  .account-toggle{font-size:.69rem;padding:7px}
+  .hero h1{font-size:2.55rem}
+}
+
 </style>
 </head>
 <body>
