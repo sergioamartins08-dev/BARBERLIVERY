@@ -59,10 +59,29 @@ footer{background:#0d0d0c;color:#c8c1b4;padding:28px 0;font-size:.88rem}
 .account-toggle{padding:9px 13px;font-size:.84rem;white-space:nowrap}.account-shell{position:fixed;inset:0;z-index:30;background:#080807c9;display:grid;place-items:center;padding:18px}.account-shell[hidden]{display:none}.account-panel{position:relative;width:min(480px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;padding:28px;box-shadow:0 24px 80px #0006}.account-panel h2{margin:8px 0;color:#211e18}.account-close{position:absolute;right:14px;top:10px;border:0;background:transparent;font-size:2rem;cursor:pointer;color:#777}.account-actions{display:flex;gap:10px;flex-wrap:wrap}.account-actions .btn{flex:1}.account-session{padding:12px;background:#f7f1e5;border:1px solid #e7d8b7;border-radius:8px;margin:12px 0;color:#5c451e;font-weight:700}.discount-preview{margin-top:12px;padding:11px 13px;border:1px solid #e7d8b7;background:#fbf7ee;border-radius:8px;color:#73551e;font-size:.88rem}.discount-preview strong{color:#19734a}.fields select{width:100%;padding:12px;border:1px solid #ddd7ca;border-radius:6px;font:inherit;background:#fff}
 @media(max-width:600px){.account-panel{padding:22px}.account-toggle{padding:8px 10px;font-size:.78rem}}
 
+
+/* Painel administrativo BARBERLIVERY */
+.admin-toggle{background:#d8bd7a;color:#17130b;border:1px solid #d8bd7a}
+.admin-shell{position:fixed;inset:0;z-index:50;background:#090908ed;display:grid;place-items:center;padding:12px}
+.admin-shell[hidden]{display:none}
+.admin-panel{width:min(1100px,100%);height:min(92vh,900px);overflow:auto;background:#f7f5f0;border-radius:14px;padding:20px;color:#171613}
+.admin-head{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-20px;background:#f7f5f0;padding:8px 0 14px;z-index:2;border-bottom:1px solid #ddd5c6}
+.admin-head h2{margin:0;color:#805f27}.admin-close{border:0;background:transparent;font-size:2rem;cursor:pointer}
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.admin-stat{background:#fff;border:1px solid #e5dccb;border-radius:10px;padding:14px}.admin-stat b{display:block;font-size:1.4rem;color:#946c29}
+.admin-section{background:#fff;border:1px solid #e5dccb;border-radius:10px;padding:14px;margin:14px 0;overflow:auto}
+.admin-section h3{margin:0 0 12px;color:#805f27}
+.admin-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:600px}
+.admin-table th,.admin-table td{text-align:left;padding:9px;border-bottom:1px solid #eee8dc;vertical-align:top}
+.admin-table button,.admin-action{border:1px solid #d8c8a5;background:#fff;padding:6px 9px;border-radius:5px;cursor:pointer;color:#6f5423;font-weight:700}
+.admin-status{padding:6px;border:1px solid #ddd7ca;border-radius:5px;background:white}
+.admin-message{font-size:.9rem;color:#73551e;margin:8px 0}
+@media(max-width:650px){.admin-panel{padding:13px}.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-head{top:-13px}.admin-stat{padding:10px}}
+
 </style>
 </head>
 <body>
-<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a><a href="#pedido">Agendar</a></div><button class="btn account-toggle" id="accountToggle" type="button">Minha conta</button></nav></div></header>
+<header><div class="wrap"><nav><a class="brand" href="#inicio">♛ <b>BARBERLIVERY</b></a><div class="navlinks"><a href="#servicos">Serviços</a><a href="#proteses">Prótese capilar</a><a href="#planos">Planos</a><a href="#regioes">Regiões</a><a href="#pedido">Agendar</a></div><div style="display:flex;gap:8px;align-items:center"><button class="btn account-toggle admin-toggle" id="adminToggle" type="button" hidden>Painel admin</button><button class="btn account-toggle" id="accountToggle" type="button">Minha conta</button></div></nav></div></header>
 
 <div class="account-shell" id="accountShell" hidden>
   <div class="account-panel">
@@ -81,6 +100,24 @@ footer{background:#0d0d0c;color:#c8c1b4;padding:28px 0;font-size:.88rem}
     <p id="authMessage" class="small" role="status" aria-live="polite"></p>
     <button id="logoutBtn" class="select-btn" type="button" hidden>Sair da conta</button>
   </div>
+</div>
+
+
+<div class="admin-shell" id="adminShell" hidden>
+ <div class="admin-panel">
+  <div class="admin-head"><div><div class="eyebrow">Acesso restrito</div><h2>Painel administrativo</h2></div><button class="admin-close" id="adminClose" type="button" aria-label="Fechar">×</button></div>
+  <p class="admin-message" id="adminMessage">Carregando informações...</p>
+  <div class="admin-stats">
+   <div class="admin-stat">Pedidos <b id="adminOrderCount">—</b></div>
+   <div class="admin-stat">Em aberto <b id="adminOpenCount">—</b></div>
+   <div class="admin-stat">Clientes <b id="adminCustomerCount">—</b></div>
+   <div class="admin-stat">Faturamento concluído <b id="adminRevenue">—</b></div>
+  </div>
+  <div class="admin-section"><h3>Pedidos e agendamentos</h3><div id="adminOrders">Carregando...</div></div>
+  <div class="admin-section"><h3>Serviços, combos e planos</h3><div id="adminCatalog">Carregando...</div></div>
+  <div class="admin-section"><h3>Taxas de deslocamento</h3><div id="adminFees">Carregando...</div></div>
+  <div class="admin-section"><h3>Clientes cadastrados</h3><div id="adminCustomers">Carregando...</div></div>
+ </div>
 </div>
 
 <main id="inicio">
@@ -223,7 +260,7 @@ document.getElementById('signupBtn').addEventListener('click',async()=>{
  if(!email||password.length<8){showAuthMessage('Informe um e-mail válido e uma senha com pelo menos 8 caracteres.',true);return;}
  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:window.location.origin}});
  if(error){showAuthMessage(error.message,true);return;}
- if(data.session){currentSession=data.session;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Conta criada! Seu desconto de primeira compra está disponível.');}
+ if(data.session){currentSession=data.session;updateAccountUI();await refreshDiscountStatus();await verifyAdmin();showAuthMessage('Conta criada! Seu desconto de primeira compra está disponível.');}
  else{showAuthMessage('Cadastro iniciado. Confirme seu e-mail e depois entre na sua conta.');}
 });
 document.getElementById('authForm').addEventListener('submit',async e=>{
@@ -237,10 +274,10 @@ document.getElementById('authForm').addEventListener('submit',async e=>{
 document.getElementById('logoutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
  if(error){showAuthMessage(error.message,true);return;}
- currentSession=null;discountEligible=false;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Você saiu da sua conta.');
+ currentSession=null;discountEligible=false;isAdmin=false;document.getElementById('adminToggle').hidden=true;updateAccountUI();await refreshDiscountStatus();showAuthMessage('Você saiu da sua conta.');
 });
 supabaseClient.auth.onAuthStateChange((_event,session)=>{
- currentSession=session;updateAccountUI();refreshDiscountStatus();
+ currentSession=session;updateAccountUI();refreshDiscountStatus();verifyAdmin();
 });
 (async()=>{const {data}=await supabaseClient.auth.getSession();currentSession=data.session;updateAccountUI();await refreshDiscountStatus();})();
 
@@ -270,7 +307,61 @@ document.getElementById('bookingForm').addEventListener('submit',async e=>{
  window.location.href=`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
  alert(order.discount_applied?'Pedido registrado! Seu desconto de 10% foi aplicado nesta primeira compra.':'Pedido registrado!');
 });
-document.getElementById('year').textContent=new Date().getFullYear();
+
+// Painel administrativo: a autorização é validada no Supabase e reforçada pelas políticas RLS.
+const ADMIN_EMAIL='sergioamartina08@gmail.com';
+let isAdmin=false;
+const adminShell=document.getElementById('adminShell');
+const adminMessage=document.getElementById('adminMessage');
+const adminMoney=n=>fmt(Number(n||0));
+function adminCell(value){const td=document.createElement('td');td.textContent=value==null?'':String(value);return td;}
+function adminTable(headers,rows){const table=document.createElement('table');table.className='admin-table';const thead=document.createElement('thead');const tr=document.createElement('tr');headers.forEach(x=>{const th=document.createElement('th');th.textContent=x;tr.appendChild(th);});thead.appendChild(tr);table.appendChild(thead);const body=document.createElement('tbody');rows.forEach(r=>body.appendChild(r));table.appendChild(body);return table;}
+function adminButton(label,fn){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);return b;}
+async function verifyAdmin(){
+ isAdmin=false;
+ if(!currentSession || currentSession.user.email?.toLowerCase()!==ADMIN_EMAIL){document.getElementById('adminToggle').hidden=true;return false;}
+ const {data,error}=await supabaseClient.rpc('admin_dashboard_customers');
+ if(error){document.getElementById('adminToggle').hidden=true;return false;}
+ isAdmin=true;document.getElementById('adminToggle').hidden=false;return true;
+}
+async function loadAdminPanel(){
+ if(!isAdmin || !currentSession){adminMessage.textContent='Acesso não autorizado.';return;}
+ adminMessage.textContent='Atualizando dados do painel...';
+ const [ordersRes,catalogRes,feesRes,customersRes]=await Promise.all([
+  supabaseClient.from('orders').select('*').order('created_at',{ascending:false}).limit(100),
+  supabaseClient.from('catalog_items').select('*').order('sort_order'),
+  supabaseClient.from('travel_fees').select('*').order('neighborhood'),
+  supabaseClient.rpc('admin_dashboard_customers')
+ ]);
+ const errs=[ordersRes.error,catalogRes.error,feesRes.error,customersRes.error].filter(Boolean);
+ if(errs.length){adminMessage.textContent='Não foi possível carregar tudo: '+errs.map(e=>e.message).join(' | ');return;}
+ const orders=ordersRes.data||[],catalog=catalogRes.data||[],fees=feesRes.data||[],customers=customersRes.data||[];
+ document.getElementById('adminOrderCount').textContent=orders.length;
+ document.getElementById('adminOpenCount').textContent=orders.filter(o=>!['completed','cancelled'].includes(o.status)).length;
+ document.getElementById('adminCustomerCount').textContent=customers.length;
+ document.getElementById('adminRevenue').textContent=adminMoney(orders.filter(o=>o.status==='completed').reduce((n,o)=>n+Number(o.total||0),0));
+ const orderRows=orders.map(o=>{
+  const tr=document.createElement('tr');
+  [String(o.id).slice(0,8),o.customer_name,o.customer_phone,o.neighborhood,adminMoney(o.total),new Date(o.created_at).toLocaleString('pt-BR'),o.status].forEach(v=>tr.appendChild(adminCell(v)));
+  const td=document.createElement('td');const sel=document.createElement('select');sel.className='admin-status';
+  ['received','confirmed','completed','cancelled'].forEach(v=>{const op=document.createElement('option');op.value=v;op.textContent=({received:'Recebido',confirmed:'Confirmado',completed:'Concluído',cancelled:'Cancelado'})[v];op.selected=o.status===v;sel.appendChild(op);});
+  sel.addEventListener('change',async()=>{const {error}=await supabaseClient.from('orders').update({status:sel.value}).eq('id',o.id);if(error){adminMessage.textContent='Erro ao atualizar pedido: '+error.message;return;}adminMessage.textContent='Status do pedido atualizado.';await loadAdminPanel();});
+  td.appendChild(sel);tr.appendChild(td);return tr;
+ });
+ document.getElementById('adminOrders').replaceChildren(orderRows.length?adminTable(['Pedido','Cliente','WhatsApp','Bairro','Total','Criado em','Status atual','Alterar status'],orderRows):document.createTextNode('Nenhum pedido registrado até agora.'));
+ const catalogRows=catalog.map(item=>{const tr=document.createElement('tr');[item.name,item.item_type,adminMoney(item.price),item.active?'Ativo':'Inativo'].forEach(v=>tr.appendChild(adminCell(v)));const td=document.createElement('td');td.appendChild(adminButton('Editar preço',async()=>{const raw=prompt('Novo preço para '+item.name,Number(item.price).toFixed(2).replace('.',','));if(raw===null)return;const value=Number(raw.replace(',','.'));if(!Number.isFinite(value)||value<0){alert('Informe um preço válido.');return;}const {error}=await supabaseClient.from('catalog_items').update({price:value}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao salvar preço: '+error.message;return;}await loadAdminPanel();}));td.appendChild(document.createTextNode(' '));td.appendChild(adminButton(item.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('catalog_items').update({active:!item.active}).eq('id',item.id);if(error){adminMessage.textContent='Erro ao alterar catálogo: '+error.message;return;}await loadAdminPanel();}));tr.appendChild(td);return tr;});
+ document.getElementById('adminCatalog').replaceChildren(adminTable(['Item','Tipo','Preço','Disponibilidade','Ações'],catalogRows));
+ const feeRows=fees.map(f=>{const tr=document.createElement('tr');[f.neighborhood,adminMoney(f.fee),f.active?'Ativa':'Inativa'].forEach(v=>tr.appendChild(adminCell(v)));const td=document.createElement('td');td.appendChild(adminButton('Editar taxa',async()=>{const raw=prompt('Nova taxa para '+f.neighborhood,Number(f.fee).toFixed(2).replace('.',','));if(raw===null)return;const value=Number(raw.replace(',','.'));if(!Number.isFinite(value)||value<0){alert('Informe um valor válido.');return;}const {error}=await supabaseClient.from('travel_fees').update({fee:value}).eq('id',f.id);if(error){adminMessage.textContent='Erro ao salvar taxa: '+error.message;return;}await loadAdminPanel();}));td.appendChild(document.createTextNode(' '));td.appendChild(adminButton(f.active?'Desativar':'Ativar',async()=>{const {error}=await supabaseClient.from('travel_fees').update({active:!f.active}).eq('id',f.id);if(error){adminMessage.textContent='Erro ao alterar taxa: '+error.message;return;}await loadAdminPanel();}));tr.appendChild(td);return tr;});
+ document.getElementById('adminFees').replaceChildren(adminTable(['Bairro','Taxa','Status','Ações'],feeRows));
+ const customerRows=customers.map(c=>{const tr=document.createElement('tr');[c.full_name||'—',c.email,new Date(c.created_at).toLocaleDateString('pt-BR')].forEach(v=>tr.appendChild(adminCell(v)));return tr;});
+ document.getElementById('adminCustomers').replaceChildren(customerRows.length?adminTable(['Nome','E-mail','Cadastro'],customerRows):document.createTextNode('Nenhum cliente cadastrado.'));
+ adminMessage.textContent='Painel atualizado. '+orders.length+' pedido(s), '+catalog.length+' itens no catálogo e '+customers.length+' cliente(s).';
+}
+document.getElementById('adminToggle').addEventListener('click',async()=>{adminShell.hidden=false;await loadAdminPanel();});
+document.getElementById('adminClose').addEventListener('click',()=>{adminShell.hidden=true;});
+
+ document.getElementById('year').textContent=new Date().getFullYear();
 render();
+verifyAdmin();
 </script>
 </body></html>
